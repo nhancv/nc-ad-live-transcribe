@@ -6,15 +6,25 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements MessageDialogFragment.Listener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
+
+    private TextView tvStatus;
+    private ImageView ivRecord;
 
     private final VoiceRecorder.Callback voiceCallback = new VoiceRecorder.Callback() {
 
@@ -43,11 +53,17 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     };
     private final SpeedRecognize.Listener speechServiceListener = new SpeedRecognize.Listener() {
         @Override
-        public void onSpeechRecognized(String text, boolean isFinal) {
+        public void onSpeechRecognized(final String text, boolean isFinal) {
             if (isFinal) {
                 voiceRecorder.dismiss();
             }
-            Log.e(TAG, "onSpeechRecognized: " + text + " isFinal: " + isFinal);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tvStatus.setText(text);
+                }
+            });
+            Log.d(TAG, "onSpeechRecognized: " + text + " isFinal: " + isFinal);
         }
     };
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -72,6 +88,41 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tvStatus = findViewById(R.id.tv_status);
+        ivRecord = findViewById(R.id.iv_record);
+
+        Button button = findViewById(R.id.ib_file);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                v.setEnabled(false);
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        try {
+                            SpeedRecognize.recognizeShortAudioFile(getResources().openRawResource(R.raw.credentials),
+                                    getResources().openRawResource(R.raw.audio),
+                                    new SpeedRecognize.Listener() {
+                                        @Override
+                                        public void onSpeechRecognized(final String text, boolean isFinal) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    v.setEnabled(true);
+                                                    tvStatus.setText(text);
+                                                }
+                                            });
+                                        }
+                                    }
+                            );
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
 
     }
 
@@ -130,8 +181,13 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         return speedRecognizeService != null && speedRecognizeService.getSpeedRecognize() != null;
     }
 
-    public void showStatus(boolean status) {
-        Log.e(TAG, "showStatus: " + status);
+    public void showStatus(final boolean status) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ivRecord.setImageResource(status ? R.drawable.ic_record_voice_active : R.drawable.ic_record_voice);
+            }
+        });
     }
 
     private void showPermissionMessageDialog() {
@@ -142,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
     @Override
     public void onMessageDialogDismissed() {
-
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
+                REQUEST_RECORD_AUDIO_PERMISSION);
     }
 }
