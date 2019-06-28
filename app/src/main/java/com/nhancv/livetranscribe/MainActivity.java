@@ -26,20 +26,22 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     private TextView tvStatus;
     private ImageView ivRecord;
 
+    // TODO: 2019-06-29 Add speech recognition
+    /** SpeechRecognizeService setup **/
     private final VoiceRecorder.Callback voiceCallback = new VoiceRecorder.Callback() {
 
         @Override
         public void onVoiceStart() {
             showStatus(true);
             if (isServiceReady()) {
-                speedRecognizeService.getSpeedRecognize().start(voiceRecorder.getSampleRate());
+                speechRecognizeService.getSpeechRecognize().start(voiceRecorder.getSampleRate());
             }
         }
 
         @Override
         public void onVoice(byte[] data, int size) {
             if (isServiceReady()) {
-                speedRecognizeService.getSpeedRecognize().streamingMicRecognize(data, size);
+                speechRecognizeService.getSpeechRecognize().streamingMicRecognize(data, size);
             }
         }
 
@@ -47,11 +49,11 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         public void onVoiceEnd() {
             showStatus(false);
             if (isServiceReady()) {
-                speedRecognizeService.getSpeedRecognize().stop();
+                speechRecognizeService.getSpeechRecognize().stop();
             }
         }
     };
-    private final SpeedRecognize.Listener speechServiceListener = new SpeedRecognize.Listener() {
+    private final SpeechRecognize.Listener speechServiceListener = new SpeechRecognize.Listener() {
         @Override
         public void onSpeechRecognized(final String text, boolean isFinal) {
             if (isFinal) {
@@ -70,19 +72,21 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
-            speedRecognizeService = SpeedRecognizeService.from(binder);
-            speedRecognizeService.getSpeedRecognize().addListener(speechServiceListener);
+            speechRecognizeService = SpeechRecognizeService.from(binder);
+            speechRecognizeService.getSpeechRecognize().addListener(speechServiceListener);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            speedRecognizeService = null;
+            speechRecognizeService = null;
         }
 
     };
 
+    private SpeechRecognizeService speechRecognizeService;
+    /** SpeechRecognizeService end-setup **/
+
     private VoiceRecorder voiceRecorder;
-    private SpeedRecognizeService speedRecognizeService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,9 +105,9 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     public void run() {
 
                         try {
-                            SpeedRecognize.recognizeShortAudioFile(getResources().openRawResource(R.raw.credentials),
+                            SpeechRecognize.recognizeShortAudioFile(getResources().openRawResource(R.raw.credentials),
                                     getResources().openRawResource(R.raw.audio),
-                                    new SpeedRecognize.Listener() {
+                                    new SpeechRecognize.Listener() {
                                         @Override
                                         public void onSpeechRecognized(final String text, boolean isFinal) {
                                             runOnUiThread(new Runnable() {
@@ -131,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         super.onStart();
 
         // Prepare Cloud Speech API
-        bindService(new Intent(this, SpeedRecognizeService.class), serviceConnection, BIND_AUTO_CREATE);
+        bindService(new Intent(this, SpeechRecognizeService.class), serviceConnection, BIND_AUTO_CREATE);
 
         // Start listening to voices
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -152,11 +156,11 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         stopVoiceRecorder();
 
         // Stop Cloud Speech API
-        if (speedRecognizeService != null) {
-            speedRecognizeService.getSpeedRecognize().removeListener(speechServiceListener);
+        if (speechRecognizeService != null) {
+            speechRecognizeService.getSpeechRecognize().removeListener(speechServiceListener);
         }
         unbindService(serviceConnection);
-        speedRecognizeService = null;
+        speechRecognizeService = null;
 
         super.onStop();
     }
@@ -178,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     }
 
     public boolean isServiceReady() {
-        return speedRecognizeService != null && speedRecognizeService.getSpeedRecognize() != null;
+        return speechRecognizeService != null && speechRecognizeService.getSpeechRecognize() != null;
     }
 
     public void showStatus(final boolean status) {

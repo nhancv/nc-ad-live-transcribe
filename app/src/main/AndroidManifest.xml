@@ -23,6 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".SpeedRecognizeService"></service>
+        <service android:name=".SpeechRecognizeService"></service>
     </application>
 </manifest>

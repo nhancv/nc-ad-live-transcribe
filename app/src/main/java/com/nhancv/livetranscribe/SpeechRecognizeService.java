@@ -9,28 +9,28 @@ import android.text.TextUtils;
 
 import java.util.Locale;
 
-public class SpeedRecognizeService extends Service {
-    private static final String TAG = SpeedRecognizeService.class.getSimpleName();
+public class SpeechRecognizeService extends Service {
+    private static final String TAG = SpeechRecognizeService.class.getSimpleName();
 
-    private SpeedRecognize speedRecognize;
+    private SpeechRecognize speechRecognize;
     private final SpeechBinder binder = new SpeechBinder();
 
-    public static SpeedRecognizeService from(IBinder binder) {
-        return ((SpeedRecognizeService.SpeechBinder) binder).getService();
+    public static SpeechRecognizeService from(IBinder binder) {
+        return ((SpeechRecognizeService.SpeechBinder) binder).getService();
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        if (speedRecognize == null) {
-            speedRecognize = new SpeedRecognize(getApplicationContext().getResources().openRawResource(R.raw.credentials));
+        if (speechRecognize == null) {
+            speechRecognize = new SpeechRecognize(getApplicationContext().getResources().openRawResource(R.raw.credentials));
         }
     }
 
     @Override
     public void onDestroy() {
-        if (speedRecognize != null) {
-            speedRecognize.destroy();
+        if (speechRecognize != null) {
+            speechRecognize.destroy();
         }
         super.onDestroy();
     }
@@ -40,13 +40,13 @@ public class SpeedRecognizeService extends Service {
         return binder;
     }
 
-    public SpeedRecognize getSpeedRecognize() {
-        return speedRecognize;
+    public SpeechRecognize getSpeechRecognize() {
+        return speechRecognize;
     }
 
     private class SpeechBinder extends Binder {
-        SpeedRecognizeService getService() {
-            return SpeedRecognizeService.this;
+        SpeechRecognizeService getService() {
+            return SpeechRecognizeService.this;
         }
 
     }

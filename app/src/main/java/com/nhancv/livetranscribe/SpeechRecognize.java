@@ -29,8 +29,8 @@ import java.util.concurrent.Executors;
 
 //https://cloud.google.com/speech-to-text/docs/reference/libraries
 //https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients/google-cloud-speech
-public class SpeedRecognize {
-    private static final String TAG = SpeedRecognize.class.getSimpleName();
+public class SpeechRecognize {
+    private static final String TAG = SpeechRecognize.class.getSimpleName();
 
     private static final int SAMPLE_RATE = 16000;
     private ArrayList<Listener> listeners;
@@ -39,7 +39,7 @@ public class SpeedRecognize {
     private SpeechClient speechClient;
     private ClientStream<StreamingRecognizeRequest> clientStream;
 
-    public SpeedRecognize(InputStream credentialsStream) {
+    public SpeechRecognize(InputStream credentialsStream) {
         try {
             // Instantiates a client
             GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream);
