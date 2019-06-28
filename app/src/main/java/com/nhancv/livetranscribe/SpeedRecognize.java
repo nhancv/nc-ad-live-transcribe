@@ -21,6 +21,8 @@ import java.util.concurrent.ExecutionException;
 public class SpeedRecognize {
     private static final String TAG = SpeedRecognize.class.getSimpleName();
 
+    //https://cloud.google.com/speech-to-text/docs/reference/libraries
+    //https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients/google-cloud-speech
     public void test(Context context) throws IOException {
 
         // Instantiates a client

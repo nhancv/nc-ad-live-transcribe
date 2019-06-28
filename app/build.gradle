@@ -39,7 +39,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    implementation 'com.google.cloud:google-cloud-speech:1.1.0'
+    implementation 'com.google.cloud:google-cloud-speech:1.10.0'
     //https://github.com/grpc/grpc-java
     implementation 'io.grpc:grpc-okhttp:1.20.0'
 
