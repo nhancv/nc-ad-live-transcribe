@@ -2,11 +2,13 @@ package com.nhancv.livetranscribe;
 
 import android.support.annotation.NonNull;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.rpc.ClientStream;
 import com.google.api.gax.rpc.ResponseObserver;
 import com.google.api.gax.rpc.StreamController;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.speech.v1.RecognitionAudio;
 import com.google.cloud.speech.v1.RecognitionConfig;
@@ -39,14 +41,17 @@ public class SpeechRecognize {
     private SpeechClient speechClient;
     private ClientStream<StreamingRecognizeRequest> clientStream;
 
-    public SpeechRecognize(InputStream credentialsStream) {
+    public SpeechRecognize(final InputStream credentialsStream) {
         try {
             // Instantiates a client
-            GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream);
-            FixedCredentialsProvider credentialsProvider = FixedCredentialsProvider.create(credentials);
             speechSettings =
                     SpeechSettings.newBuilder()
-                            .setCredentialsProvider(credentialsProvider)
+                            .setCredentialsProvider(new CredentialsProvider() {
+                                @Override
+                                public Credentials getCredentials() throws IOException {
+                                    return GoogleCredentials.fromStream(credentialsStream);
+                                }
+                            })
                             .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(
                                     Math.max(2, Math.min(Runtime.getRuntime().availableProcessors() - 1, 4)))))
                             .build();
